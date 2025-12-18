@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Clone Repo') {
             steps {
-                git url: 'https://github.com/Abhi0905/Trend.git',
+                git url: 'https://github.com/Abhi090595/Trend.git',
                     branch: 'main',
                     credentialsId: 'github-creds'
             }

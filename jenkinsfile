@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "dockerhub_username/trend-app"
+        DOCKER_IMAGE = "a516/trend-app"
         DOCKER_CREDS = "dockerhub-creds"
     }
 

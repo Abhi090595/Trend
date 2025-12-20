@@ -38,7 +38,7 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh '''
-                    # Login using DockerHub credentials
+                     Log in and push without storing credentials
                     echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
 
@@ -46,7 +46,7 @@ pipeline {
                     docker push a516/trend-app:latest
                     docker push a516/trend-app:${BUILD_NUMBER}
 
-                    # Logout for security
+                    Logout immediately to remove credentials from memory
                     docker logout
                     '''
                 }

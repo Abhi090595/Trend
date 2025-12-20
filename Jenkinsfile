@@ -2,11 +2,14 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "a516/trend-app"  // DockerHub username/repo format
-        DOCKER_CREDS = "dockerhub-creds" // Jenkins credentials ID for DockerHub
+        // Docker image name
+        DOCKER_IMAGE = "a516/trend-app"
+        // Jenkins credential ID for DockerHub
+        DOCKER_CREDS = "dockerhub-creds"
     }
 
     stages {
+
         stage('Clone Repo') {
             steps {
                 git url: 'https://github.com/Abhi090595/Trend.git',
@@ -17,22 +20,34 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE:latest .'
-                sh 'docker tag $DOCKER_IMAGE:latest $DOCKER_IMAGE:${BUILD_NUMBER}'
+                sh '''
+                # Build latest image
+                docker build -t a516/trend-app:latest .
+
+                # Tag with build number
+                docker tag a516/trend-app:latest a516/trend-app:${BUILD_NUMBER}
+                '''
             }
         }
 
         stage('Push to DockerHub') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: DOCKER_CREDS,
+                    credentialsId: "dockerhub-creds",
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh '''
-                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                    docker push $DOCKER_IMAGE:latest
-                    docker push $DOCKER_IMAGE:${BUILD_NUMBER}
+                    # Login using DockerHub credentials
+                    docker login -u "$DOCKER_USER" --password-stdin
+
+
+                    # Push both tags
+                    docker push a516/trend-app:latest
+                    docker push a516/trend-app:${BUILD_NUMBER}
+
+                    # Logout for security
+                    docker logout
                     '''
                 }
             }
@@ -49,7 +64,11 @@ pipeline {
     }
 
     post {
-        success { echo "Pipeline executed successfully! ✅" }
-        failure { echo "Pipeline failed! ❌" }
+        success {
+            echo "Pipeline executed successfully! ✅"
+        }
+        failure {
+            echo "Pipeline failed! ❌"
+        }
     }
 }

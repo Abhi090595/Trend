@@ -7,6 +7,7 @@ pipeline {
     }
 
     stages {
+
         stage('Clone Repo') {
             steps {
                 git url: 'https://github.com/Abhi090595/Trend.git',
@@ -17,7 +18,10 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE:latest .'
+                sh '''
+                docker build -t $DOCKER_IMAGE:latest .
+                docker tag $DOCKER_IMAGE:latest $DOCKER_IMAGE:${BUILD_NUMBER}
+                '''
             }
         }
 
@@ -25,12 +29,14 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: DOCKER_CREDS,
-                    usernameVariable: 'USER',
-                    passwordVariable: 'PASS'
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh '''
-                    echo $PASS | docker login -u $USER --password-stdin
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
                     docker push $DOCKER_IMAGE:latest
+                    docker push $DOCKER_IMAGE:${BUILD_NUMBER}
+                    docker logout
                     '''
                 }
             }
@@ -47,7 +53,11 @@ pipeline {
     }
 
     post {
-        success { echo "Pipeline executed successfully! ✅" }
-        failure { echo "Pipeline failed! ❌" }
+        success {
+            echo "Pipeline executed successfully! ✅"
+        }
+        failure {
+            echo "Pipeline failed! ❌"
+        }
     }
 }

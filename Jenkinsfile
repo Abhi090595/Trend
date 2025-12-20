@@ -35,7 +35,7 @@ pipeline {
                     sh '''
                     docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
 
-                     docker push a516ltrebd-app:latest
+                     docker push a516/trend-app:latest
                     docker push $DOCKER_IMAGE:${BUILD_NUMBER}
                     docker logout
                     '''

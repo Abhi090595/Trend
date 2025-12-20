@@ -19,8 +19,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                docker build -t $DOCKER_IMAGE:latest .
-                docker tag $DOCKER_IMAGE:latest $DOCKER_IMAGE:${BUILD_NUMBER}
+                docker build -t trend-app:latest .
+                docker tag trend-app:latest trend-app:${BUILD_NUMBER}
                 '''
             }
         }
@@ -36,7 +36,7 @@ pipeline {
                     docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
 
                      docker push a516/trend-app:latest
-                    docker push $DOCKER_IMAGE:${BUILD_NUMBER}
+                    docker push trend-app:${BUILD_NUMBER}
                     docker logout
                     '''
                 }

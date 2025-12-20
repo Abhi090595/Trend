@@ -2,12 +2,11 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "a516/trend-app"
-        DOCKER_CREDS = "dockerhub-creds"
+        DOCKER_IMAGE = "a516/trend-app"  // DockerHub username/repo format
+        DOCKER_CREDS = "dockerhub-creds" // Jenkins credentials ID for DockerHub
     }
 
     stages {
-
         stage('Clone Repo') {
             steps {
                 git url: 'https://github.com/Abhi090595/Trend.git',
@@ -18,10 +17,8 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh '''
-                docker build -t trend-app:latest .
-                docker tag trend-app:latest trend-app:${BUILD_NUMBER}
-                '''
+                sh 'docker build -t $DOCKER_IMAGE:latest .'
+                sh 'docker tag $DOCKER_IMAGE:latest $DOCKER_IMAGE:${BUILD_NUMBER}'
             }
         }
 
@@ -33,11 +30,9 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh '''
-                    docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
-
-                     docker push a516/trend-app:latest
-                    docker push trend-app:${BUILD_NUMBER}
-                    docker logout
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    docker push $DOCKER_IMAGE:latest
+                    docker push $DOCKER_IMAGE:${BUILD_NUMBER}
                     '''
                 }
             }
@@ -54,11 +49,7 @@ pipeline {
     }
 
     post {
-        success {
-            echo "Pipeline executed successfully! ✅"
-        }
-        failure {
-            echo "Pipeline failed! ❌"
-        }
+        success { echo "Pipeline executed successfully! ✅" }
+        failure { echo "Pipeline failed! ❌" }
     }
 }

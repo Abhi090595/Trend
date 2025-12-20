@@ -46,7 +46,7 @@ pipeline {
                     docker push a516/trend-app:latest
                     docker push a516/trend-app:${BUILD_NUMBER}
 
-                    Logout immediately to remove credentials from memory
+                   # Logout immediately to remove credentials from memory
                     docker logout
                     '''
                 }

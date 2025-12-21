@@ -2,64 +2,43 @@ pipeline {
     agent any
 
     environment {
-        // Docker image name
-        DOCKER_IMAGE = "a516/trend-app"
-        // Jenkins credential ID for DockerHub
-        DOCKER_CREDS = "dockerhub-creds"
+        DOCKER_USER = credentials('dockerhub-creds') // Jenkins credential ID
+        DOCKER_PASS = credentials('dockerhub-creds') // Same ID stores password/token
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
     }
 
     stages {
-
-        stage('Clone Repo') {
+        stage('Checkout Code') {
             steps {
-                git url: 'https://github.com/Abhi090595/Trend.git',
-                    branch: 'main',
-                    credentialsId: 'github-creds'
+                git branch: 'main', url: 'https://github.com/Abhi090595/Trend.git', credentialsId: 'github-creds'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 sh '''
-                # Build latest image
-                docker build -t a516/trend-app:latest .
-
-                # Tag with build number
-                docker tag a516/trend-app:latest a516/trend-app:${BUILD_NUMBER}
+                    docker build -t a516/trend-app:latest .
+                    docker tag a516/trend-app:latest a516/trend-app:39
                 '''
             }
         }
 
         stage('Push to DockerHub') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: "dockerhub-creden",
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh '''
-                     # Log in and push without storing credentials
+                sh '''
                     echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-
-
-                    # Push both tags
                     docker push a516/trend-app:latest
-                    docker push a516/trend-app:${BUILD_NUMBER}
-
-                   # Logout immediately to remove credentials from memory
-                    docker logout
-                    '''
-                }
+                    docker push a516/trend-app:39
+                '''
             }
         }
 
         stage('Deploy to EKS') {
             steps {
                 sh '''
-                pwd
-                ls -l
-                kubectl apply -f deployment.yml
-                kubectl apply -f service.yml
+                    kubectl get nodes
+                    kubectl apply -f deployment.yml
+                    kubectl apply -f service.yml
                 '''
             }
         }
@@ -67,10 +46,10 @@ pipeline {
 
     post {
         success {
-            echo "Pipeline executed successfully! ✅"
+            echo "Pipeline completed successfully ✅"
         }
         failure {
-            echo "Pipeline failed! ❌"
+            echo "Pipeline failed ❌"
         }
     }
 }

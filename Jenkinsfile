@@ -2,10 +2,11 @@ pipeline {
     agent any
 
     environment {
-        KUBECONFIG = '/var/lib/jenkins/.kube/config' 
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/Abhi090595/Trend.git', credentialsId: 'github-creds'
@@ -39,18 +40,21 @@ pipeline {
 
         stage('Deploy to EKS') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'aws-creds', 
-                usernameVariable: 'AWS_ACCESS_KEY_ID', 
-                passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                withCredentials([usernamePassword(
+                    credentialsId: 'aws-creds', 
+                    usernameVariable: 'AWS_ACCESS_KEY_ID', 
+                    passwordVariable: 'AWS_SECRET_ACCESS_KEY'
                 )]) {
-                sh '''
-                   aws eks update-kubeconfig --name Trend-Eks-Cluster --region us-east-1
-                   kubectl get nodes
-                    kubectl apply -f deployment.yml
-                    kubectl apply -f service.yml
-                '''
+                    sh '''
+                        aws eks update-kubeconfig --name Trend-Eks-Cluster --region us-east-1
+                        kubectl get nodes
+                        kubectl apply -f deployment.yml
+                        kubectl apply -f service.yml
+                    '''
+                }
             }
         }
+
     }
 
     post {

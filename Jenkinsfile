@@ -39,8 +39,13 @@ pipeline {
 
         stage('Deploy to EKS') {
             steps {
+                withCredentials([usernamePassword(credentialsId: 'aws-creds', 
+                usernameVariable: 'AWS_ACCESS_KEY_ID', 
+                passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                )]) {
                 sh '''
-                    kubectl get nodes
+                   aws eks update-kubeconfig --name Trend-Eks-Cluster --region us-east-1
+                   kubectl get nodes
                     kubectl apply -f deployment.yml
                     kubectl apply -f service.yml
                 '''

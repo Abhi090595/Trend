@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USER = credentials('dockerhub-creds') // Jenkins credential ID
-        DOCKER_PASS = credentials('dockerhub-creds') // Same ID stores password/token
+        DOCKER_USER = credentials('dockerhub-creden') 
+        DOCKER_PASS = credentials('dockerhub-creden') 
         KUBECONFIG = '/var/lib/jenkins/.kube/config'
     }
 

@@ -2,9 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USER = credentials('dockerhub-creden') 
-        DOCKER_PASS = credentials('dockerhub-creden') 
-        KUBECONFIG = '/var/lib/jenkins/.kube/config'
+        KUBECONFIG = '/var/lib/jenkins/.kube/config' 
     }
 
     stages {
@@ -25,11 +23,17 @@ pipeline {
 
         stage('Push to DockerHub') {
             steps {
-                sh '''
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                    docker push a516/trend-app:latest
-                    docker push a516/trend-app:39
-                '''
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creden',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push a516/trend-app:latest
+                        docker push a516/trend-app:39
+                    '''
+                }
             }
         }
 
